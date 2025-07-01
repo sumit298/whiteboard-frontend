@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
 
-  base: 'https://multiplayer-whiteboard-production.up.railway.app',
 
   plugins: [react()],
   resolve: {
