@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './LoginPage.css';
 
 interface LoginFormData {
   username: string;
@@ -41,7 +40,6 @@ const LoginPage: React.FC = () => {
       [name]: value
     }));
     
-    // Clear error when user starts typing
     if (errors[name as keyof LoginFormData]) {
       setErrors(prev => ({
         ...prev,
@@ -75,7 +73,7 @@ const LoginPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -90,13 +88,11 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Optional: Test connection to backend before proceeding
       await fetch('http://localhost:5959/test', {
         method: 'HEAD',
         mode: 'no-cors'
       }).catch(() => null);
       
-      // Navigate to whiteboard with parameters
       const params = new URLSearchParams({
         username: formData.username.trim(),
         roomId: formData.roomId.trim(),
@@ -106,7 +102,6 @@ const LoginPage: React.FC = () => {
       navigate(`/whiteboard?${params.toString()}`);
     } catch (error) {
       console.error('Connection test failed:', error);
-      // Still proceed to whiteboard - connection errors will be handled there
       const params = new URLSearchParams({
         username: formData.username.trim(),
         roomId: formData.roomId.trim(),
@@ -127,7 +122,7 @@ const LoginPage: React.FC = () => {
     }));
   };
 
-  const authenticateWithRoom = async () => {
+  const authenticateWithRoom = async (): Promise<void> => {
     if (!formData.roomId.trim() || !formData.roomPassword.trim()) {
       alert('Please enter both Room ID and Room Password first');
       return;
@@ -136,7 +131,6 @@ const LoginPage: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Call backend to authenticate with room credentials
       const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5959'}/auth/room`, {
         method: 'POST',
         headers: {
@@ -172,123 +166,495 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <h1>Join Whiteboard</h1>
-          <p>Enter your details to join or create a collaborative whiteboard session</p>
+    <div style={styles.container}>
+      {/* Left Side - Hero Section */}
+      <div style={styles.heroSection}>
+        <div style={styles.heroBackground}>
+          <div style={styles.floatingOrb1}></div>
+          <div style={styles.floatingOrb2}></div>
+          <div style={styles.floatingOrb3}></div>
         </div>
         
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              placeholder="Enter your username"
-              className={errors.username ? 'error' : ''}
-              disabled={isLoading}
-            />
-            {errors.username && <span className="error-message">{errors.username}</span>}
+        <div style={styles.heroContent}>
+          <div style={styles.heroHeader}>
+            <div style={styles.heroIcon}>
+              👥
+            </div>
+            <h1 style={styles.heroTitle}>
+              Collaborative Whiteboard
+            </h1>
+            <p style={styles.heroSubtitle}>
+              Join your team in real-time collaboration. Create, share, and innovate together on our advanced whiteboard platform.
+            </p>
+          </div>
+          
+          <div style={styles.featuresList}>
+            <div style={styles.featureItem}>
+              <div style={styles.featureIconBlue}>⚡</div>
+              <div>
+                <h3 style={styles.featureTitle}>Real-time Sync</h3>
+                <p style={styles.featureDescription}>See changes instantly across all devices</p>
+              </div>
+            </div>
+            
+            <div style={styles.featureItem}>
+              <div style={styles.featureIconPurple}>🛡️</div>
+              <div>
+                <h3 style={styles.featureTitle}>Secure Rooms</h3>
+                <p style={styles.featureDescription}>Password-protected collaborative spaces</p>
+              </div>
+            </div>
+            
+            <div style={styles.featureItem}>
+              <div style={styles.featureIconOrange}>👥</div>
+              <div>
+                <h3 style={styles.featureTitle}>Team Collaboration</h3>
+                <p style={styles.featureDescription}>Work together with unlimited participants</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div style={styles.formSection}>
+        <div style={styles.formCard}>
+          <div style={styles.formHeader}>
+            <h2 style={styles.formTitle}>Join Session</h2>
+            <p style={styles.formSubtitle}>Enter your credentials to get started</p>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="roomId">Room ID</label>
-            <div className="input-with-button">
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Username</label>
               <input
                 type="text"
-                id="roomId"
-                name="roomId"
-                value={formData.roomId}
+                name="username"
+                value={formData.username}
                 onChange={handleInputChange}
-                placeholder="Enter room ID or generate one"
-                className={errors.roomId ? 'error' : ''}
+                placeholder="Enter your username"
+                style={{
+                  ...styles.input,
+                  ...(errors.username ? styles.inputError : {})
+                }}
                 disabled={isLoading}
               />
-              <button
-                type="button"
-                onClick={generateRoomId}
-                className="generate-btn"
-                disabled={isLoading}
-              >
-                Generate
-              </button>
+              {errors.username && <p style={styles.errorMessage}>{errors.username}</p>}
             </div>
-            {errors.roomId && <span className="error-message">{errors.roomId}</span>}
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="roomPassword">Room Password</label>
-            <input
-              type="password"
-              id="roomPassword"
-              name="roomPassword"
-              value={formData.roomPassword}
-              onChange={handleInputChange}
-              placeholder="Enter room password"
-              className={errors.roomPassword ? 'error' : ''}
-              disabled={isLoading}
-            />
-            {errors.roomPassword && <span className="error-message">{errors.roomPassword}</span>}
-            <small className="help-text">
-              Set a password for new rooms, or enter the existing password for existing rooms
-            </small>
-          </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Room ID</label>
+              <div style={styles.inputWithButton}>
+                <input
+                  type="text"
+                  name="roomId"
+                  value={formData.roomId}
+                  onChange={handleInputChange}
+                  placeholder="Enter or generate room ID"
+                  style={{
+                    ...styles.input,
+                    ...styles.inputFlex,
+                    ...(errors.roomId ? styles.inputError : {})
+                  }}
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={generateRoomId}
+                  disabled={isLoading}
+                  style={styles.iconButton}
+                >
+                  🔄
+                </button>
+              </div>
+              {errors.roomId && <p style={styles.errorMessage}>{errors.roomId}</p>}
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="token">Authentication Token</label>
-            <div className="input-with-button">
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Room Password</label>
               <input
                 type="password"
-                id="token"
-                name="token"
-                value={formData.token}
+                name="roomPassword"
+                value={formData.roomPassword}
                 onChange={handleInputChange}
-                placeholder="Enter your authentication token"
-                className={errors.token ? 'error' : ''}
+                placeholder="Enter room password"
+                style={{
+                  ...styles.input,
+                  ...(errors.roomPassword ? styles.inputError : {})
+                }}
                 disabled={isLoading}
               />
-              <button
-                type="button"
-                onClick={authenticateWithRoom}
-                className="generate-btn"
-                disabled={isLoading}
-                title="Authenticate with room credentials"
-              >
-                Authenticate
-              </button>
+              {errors.roomPassword && <p style={styles.errorMessage}>{errors.roomPassword}</p>}
+              <p style={styles.helpText}>
+                Set password for new rooms or enter existing room password
+              </p>
             </div>
-            {errors.token && <span className="error-message">{errors.token}</span>}
-            <small className="help-text">
-              Contact your administrator for a valid authentication token
-            </small>
-          </div>
 
-          <button 
-            type="submit" 
-            className="login-btn"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Connecting...' : 'Join Whiteboard'}
-          </button>
-        </form>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Authentication Token</label>
+              <div style={styles.inputWithButton}>
+                <input
+                  type="password"
+                  name="token"
+                  value={formData.token}
+                  onChange={handleInputChange}
+                  placeholder="Get your token"
+                  style={{
+                    ...styles.input,
+                    ...styles.inputFlex,
+                    ...(errors.token ? styles.inputError : {})
+                  }}
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={authenticateWithRoom}
+                  disabled={isLoading}
+                  style={styles.iconButtonPurple}
+                >
+                  🔑
+                </button>
+              </div>
+              {errors.token && <p style={styles.errorMessage}>{errors.token}</p>}
+              <p style={styles.helpText}>
+                Click the key icon to authenticate with your room credentials
+              </p>
+            </div>
 
-        <div className="login-footer">
-          <div className="tips">
-            <h4>Tips:</h4>
-            <ul>
-              <li>Share the Room ID with others to collaborate</li>
-              <li>Use the same token that others in your room are using</li>
-              <li>Your username will be visible to other participants</li>
-            </ul>
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                ...styles.submitButton,
+                ...(isLoading ? styles.submitButtonDisabled : {})
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <span style={styles.spinner}></span>
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  Join Whiteboard →
+                </>
+              )}
+            </button>
+          </form>
+
+          <div style={styles.formFooter}>
+            <div style={styles.tips}>
+              <h4 style={styles.tipsTitle}>Quick Tips</h4>
+              <div style={styles.tipsList}>
+                <p style={styles.tipItem}>💡 Share your Room ID with team members</p>
+                <p style={styles.tipItem}>🔒 Keep your room password secure</p>
+                <p style={styles.tipItem}>👥 Your username will be visible to others</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    minHeight: '100vh',
+    display: 'flex',
+    background: 'linear-gradient(135deg, #1e1b4b 0%, #581c87 50%, #be185d 100%)',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+  },
+  heroSection: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '4rem 2rem',
+    position: 'relative' as const,
+    overflow: 'hidden',
+  },
+  heroBackground: {
+    position: 'absolute' as const,
+    inset: 0,
+    opacity: 0.2,
+  },
+  floatingOrb1: {
+    position: 'absolute' as const,
+    top: '5rem',
+    left: '5rem',
+    width: '18rem',
+    height: '18rem',
+    background: 'linear-gradient(45deg, #06b6d4, #3b82f6)',
+    borderRadius: '50%',
+    filter: 'blur(40px)',
+    animation: 'pulse 3s ease-in-out infinite',
+  },
+  floatingOrb2: {
+    position: 'absolute' as const,
+    top: '10rem',
+    right: '5rem',
+    width: '24rem',
+    height: '24rem',
+    background: 'linear-gradient(45deg, #a855f7, #ec4899)',
+    borderRadius: '50%',
+    filter: 'blur(40px)',
+    animation: 'pulse 3s ease-in-out infinite 2s',
+  },
+  floatingOrb3: {
+    position: 'absolute' as const,
+    bottom: '-8rem',
+    left: '10rem',
+    width: '20rem',
+    height: '20rem',
+    background: 'linear-gradient(45deg, #f59e0b, #ef4444)',
+    borderRadius: '50%',
+    filter: 'blur(40px)',
+    animation: 'pulse 3s ease-in-out infinite 4s',
+  },
+  heroContent: {
+    position: 'relative' as const,
+    zIndex: 10,
+    color: 'white',
+    maxWidth: '32rem',
+  },
+  heroHeader: {
+    marginBottom: '2rem',
+  },
+  heroIcon: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '4rem',
+    height: '4rem',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '1rem',
+    backdropFilter: 'blur(10px)',
+    marginBottom: '1.5rem',
+    fontSize: '2rem',
+  },
+  heroTitle: {
+    fontSize: '3.5rem',
+    fontWeight: 'bold',
+    background: 'linear-gradient(45deg, #06b6d4, #a855f7, #ec4899)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    marginBottom: '1.5rem',
+    lineHeight: 1.1,
+  },
+  heroSubtitle: {
+    fontSize: '1.25rem',
+    color: '#d1d5db',
+    marginBottom: '2rem',
+    lineHeight: 1.6,
+  },
+  featuresList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '1.5rem',
+  },
+  featureItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  },
+  featureIconBlue: {
+    flexShrink: 0,
+    width: '3rem',
+    height: '3rem',
+    background: 'linear-gradient(45deg, #06b6d4, #3b82f6)',
+    borderRadius: '0.75rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '1.5rem',
+  },
+  featureIconPurple: {
+    flexShrink: 0,
+    width: '3rem',
+    height: '3rem',
+    background: 'linear-gradient(45deg, #a855f7, #ec4899)',
+    borderRadius: '0.75rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '1.5rem',
+  },
+  featureIconOrange: {
+    flexShrink: 0,
+    width: '3rem',
+    height: '3rem',
+    background: 'linear-gradient(45deg, #f59e0b, #ef4444)',
+    borderRadius: '0.75rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '1.5rem',
+  },
+  featureTitle: {
+    fontSize: '1.125rem',
+    fontWeight: '600',
+    color: 'white',
+    margin: 0,
+  },
+  featureDescription: {
+    color: '#9ca3af',
+    margin: 0,
+  },
+  formSection: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2rem',
+  },
+  formCard: {
+    width: '100%',
+    maxWidth: '28rem',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(20px)',
+    borderRadius: '1.5rem',
+    padding: '2rem',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+  },
+  formHeader: {
+    textAlign: 'center' as const,
+    marginBottom: '2rem',
+  },
+  formTitle: {
+    fontSize: '1.875rem',
+    fontWeight: 'bold',
+    color: 'white',
+    margin: '0 0 0.5rem 0',
+  },
+  formSubtitle: {
+    color: '#d1d5db',
+    margin: 0,
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '1.5rem',
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem',
+  },
+  label: {
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    color: '#e5e7eb',
+  },
+  input: {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    border: '2px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '0.75rem',
+    color: 'white',
+    fontSize: '1rem',
+    outline: 'none',
+    transition: 'all 0.2s ease',
+    boxSizing: 'border-box' as const,
+  },
+  inputFlex: {
+    flex: 1,
+  },
+  inputError: {
+    borderColor: '#ef4444',
+  },
+  inputWithButton: {
+    display: 'flex',
+    gap: '0.5rem',
+  },
+  iconButton: {
+    padding: '0.75rem',
+    background: 'linear-gradient(45deg, #06b6d4, #3b82f6)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.75rem',
+    fontSize: '1.25rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  },
+  iconButtonPurple: {
+    padding: '0.75rem',
+    background: 'linear-gradient(45deg, #a855f7, #ec4899)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.75rem',
+    fontSize: '1.25rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  },
+  errorMessage: {
+    color: '#ef4444',
+    fontSize: '0.875rem',
+    margin: 0,
+  },
+  helpText: {
+    color: '#9ca3af',
+    fontSize: '0.75rem',
+    margin: 0,
+  },
+  submitButton: {
+    width: '100%',
+    padding: '1rem 1.5rem',
+    background: 'linear-gradient(45deg, #06b6d4, #a855f7, #ec4899)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.75rem',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    outline: 'none',
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  spinner: {
+    width: '1.25rem',
+    height: '1.25rem',
+    border: '2px solid rgba(255, 255, 255, 0.3)',
+    borderTop: '2px solid white',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  formFooter: {
+    marginTop: '2rem',
+    paddingTop: '1.5rem',
+    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  tips: {
+    textAlign: 'center' as const,
+  },
+  tipsTitle: {
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    color: '#e5e7eb',
+    margin: '0 0 0.75rem 0',
+  },
+  tipsList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem',
+  },
+  tipItem: {
+    color: '#9ca3af',
+    fontSize: '0.75rem',
+    margin: 0,
+  },
 };
 
 export default LoginPage;

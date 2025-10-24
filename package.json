@@ -14,16 +14,19 @@
 		"deploy": "npm run build && npx partykit deploy"
 	},
 	"dependencies": {
+		"@tailwindcss/vite": "^4.1.11",
 		"@tldraw/sync": "^3.13.1",
 		"@tldraw/tldraw": "^3.10.3",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/uuid": "^10.0.0",
 		"jsonwebtoken": "^9.0.2",
 		"jspdf": "^3.0.1",
+		"lucide-react": "^0.525.0",
 		"partysocket": "^1.0.2",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-router-dom": "^6.26.1",
+		"tailwindcss": "^4.1.11",
 		"tldraw": "^3.13.1",
 		"uuid": "^10.0.0"
 	},
